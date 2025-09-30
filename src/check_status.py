@@ -11,14 +11,16 @@ import argparse
 import asyncio
 import json
 import time
+import traceback
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from collections import defaultdict
 
 import httpx
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Template
 
 ROOT_DIR = Path(__file__).parent.parent
 
@@ -27,8 +29,9 @@ ROOT_DIR = Path(__file__).parent.parent
 # =============================================================================
 
 HISTORY_FILE = ROOT_DIR / "data/history.jsonl"
-OUTPUT_HTML = ROOT_DIR / "docs/index.html"
-TEMPLATE_DIR = ROOT_DIR / "templates"
+OUTPUT_FILE = ROOT_DIR / "docs/index.html"
+OUTPUT_DATA = ROOT_DIR / "docs/data.json"
+TEMPLATE_FILE = ROOT_DIR / "templates/index.html"
 
 CHECK_TIMEOUT = 10.0  # seconds
 
@@ -58,10 +61,17 @@ def register(display_name: str):
 class CheckResult:
     """Result of a single health check."""
 
-    timestamp: str
     name: str
     success: bool
-    response_time: float  # seconds
+    response_time: int  # milliseconds
+
+
+@dataclass
+class CheckRun:
+    """Result of a complete check run."""
+
+    timestamp: str
+    results: list[CheckResult]
 
 
 # =============================================================================
@@ -93,6 +103,22 @@ async def check_portal_mozz_us() -> bool:
         return response.status_code == 200
 
 
+@register(display_name="https://git.mozz.us")
+async def check_git_mozz_us() -> bool:
+    """Check https://git.mozz.us."""
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://git.mozz.us")
+        return response.status_code == 200
+
+
+@register(display_name="https://ascii.mozz.us:7070")
+async def check_ascii_mozz_us_7070() -> bool:
+    """Check https://ascii.mozz.us:7070."""
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://ascii.mozz.us:7070")
+        return response.status_code == 200
+
+
 # =============================================================================
 # HEALTH CHECK EXECUTION
 # =============================================================================
@@ -104,11 +130,13 @@ async def run_single_check(name: str, func: Callable) -> CheckResult:
     try:
         success = await func()
     except Exception:
+        print(f"Error checking {name}:")
+        traceback.print_exc()
         success = False
-    response_time = time.perf_counter() - start_time
+
+    response_time = int((time.perf_counter() - start_time) * 1000)
 
     return CheckResult(
-        timestamp=datetime.now(timezone.utc).isoformat(),
         name=name,
         success=success,
         response_time=response_time,
@@ -121,11 +149,10 @@ async def run_all_checks() -> list[CheckResult]:
     return await asyncio.gather(*tasks)
 
 
-def save_results(results: list[CheckResult]) -> None:
-    """Append check results to the JSONL data file."""
+def save_results(check_run: CheckRun) -> None:
+    """Append check run to the JSONL data file."""
     with HISTORY_FILE.open("a") as fp:
-        for result in results:
-            fp.write(json.dumps(asdict(result)) + "\n")
+        fp.write(json.dumps(asdict(check_run)) + "\n")
 
 
 # =============================================================================
@@ -134,22 +161,69 @@ def save_results(results: list[CheckResult]) -> None:
 
 
 def load_check_data() -> list[dict[str, Any]]:
-    """Load all check results from the JSONL file."""
-    results = []
+    """Load all check runs from the JSONL file."""
+    runs = []
     with HISTORY_FILE.open() as fp:
         for line in fp:
-            results.append(json.loads(line))
-    return results
+            runs.append(json.loads(line))
+    return runs
+
+
+def aggregate_chart_data(
+    runs: list[dict[str, Any]],
+    service_name: str,
+    days: int = 7,
+) -> dict[str, list]:
+    """Aggregate response time data for charts (hourly buckets for last N days)."""
+    # Get cutoff time
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+
+    # Group by hour
+    hourly_data = defaultdict(list)
+    for run in runs:
+        timestamp = datetime.fromisoformat(run["timestamp"])
+        if timestamp >= cutoff:
+            # Round to hour
+            hour_key = timestamp.replace(minute=0, second=0, microsecond=0)
+            # Find this service's result in this run
+            for result in run["results"]:
+                if result["name"] == service_name:
+                    hourly_data[hour_key].append(result["response_time"])
+                    break
+
+    if not hourly_data:
+        return {"timestamps": [], "response_times": []}
+
+    # Sort and calculate averages
+    sorted_hours = sorted(hourly_data.keys())
+    timestamps = [h.isoformat() for h in sorted_hours]
+    response_times = [
+        round(sum(hourly_data[h]) / len(hourly_data[h]), 2) for h in sorted_hours
+    ]
+
+    return {"timestamps": timestamps, "response_times": response_times}
 
 
 def calculate_service_stats(
-    data: list[dict[str, Any]], service_name: str
+    runs: list[dict[str, Any]], service_name: str
 ) -> dict[str, Any]:
     """Calculate statistics for a single service over the past 30 days."""
+    # Collect all results for this service
+    service_results = []
+    for run in runs:
+        for result in run["results"]:
+            if result["name"] == service_name:
+                service_results.append(
+                    {
+                        "timestamp": run["timestamp"],
+                        "success": result["success"],
+                        "response_time": result["response_time"],
+                    }
+                )
+                break
 
-    service_data = [d for d in data if d["name"] == service_name]
-
-    if not service_data:
+    if not service_results:
         return {
             "name": service_name,
             "current_status": "no-data",
@@ -157,10 +231,11 @@ def calculate_service_stats(
             "uptime_days": [{"status": "no-data", "date": "", "uptime": 0}] * 30,
             "uptime_30d": 0,
             "avg_response_time": 0,
+            "chart_data": {"timestamps": [], "response_times": []},
         }
 
     # Get most recent status
-    most_recent = service_data[-1]
+    most_recent = service_results[-1]
     current_status = "operational" if most_recent["success"] else "down"
     current_status_text = "Operational" if most_recent["success"] else "Down"
 
@@ -171,18 +246,21 @@ def calculate_service_stats(
         uptime_days.append({"status": "no-data", "date": f"Day {i + 1}", "uptime": 0})
 
     # Calculate overall uptime
-    total_checks = len(service_data)
-    successful_checks = sum(1 for d in service_data if d["success"])
+    total_checks = len(service_results)
+    successful_checks = sum(1 for d in service_results if d["success"])
     uptime_pct = (
         round((successful_checks / total_checks) * 100, 2) if total_checks > 0 else 0
     )
 
     # Calculate average response time
     avg_response = (
-        round(sum(d["response_time"] for d in service_data) / total_checks * 1000, 2)
+        round(sum(d["response_time"] for d in service_results) / total_checks, 2)
         if total_checks > 0
         else 0
     )
+
+    # Get chart data
+    chart_data = aggregate_chart_data(runs, service_name)
 
     return {
         "name": service_name,
@@ -191,11 +269,12 @@ def calculate_service_stats(
         "uptime_days": uptime_days,
         "uptime_30d": uptime_pct,
         "avg_response_time": avg_response,
+        "chart_data": chart_data,
     }
 
 
 def generate_html() -> None:
-    """Generate the status page HTML from historical data."""
+    """Generate the status page HTML and data JSON from historical data."""
     data = load_check_data()
 
     # Get unique service names
@@ -218,16 +297,21 @@ def generate_html() -> None:
         overall_status = "degraded"
         status_message = "System performance degraded"
 
-    env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
-    template = env.get_template("index.html")
-    html_content = template.render(
-        overall_status=overall_status,
-        status_message=status_message,
-        services=services,
-        last_updated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-    )
+    # Write data.json for JavaScript to fetch
+    data_output = {
+        "services": services,
+        "overall_status": overall_status,
+        "status_message": status_message,
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    OUTPUT_DATA.write_text(json.dumps(data_output, indent=2))
 
-    OUTPUT_HTML.write_text(html_content)
+    # Generate HTML
+    template_content = TEMPLATE_FILE.read_text()
+    template = Template(template_content)
+    html_content = template.render()
+
+    OUTPUT_FILE.write_text(html_content)
 
 
 # =============================================================================
@@ -260,16 +344,18 @@ async def main() -> None:
 
     if args.check:
         print("Running health checks...")
+        timestamp = datetime.now(timezone.utc).isoformat()
         results = await run_all_checks()
-        save_results(results)
+        check_run = CheckRun(timestamp=timestamp, results=results)
+        save_results(check_run)
         for result in results:
             status = "✓" if result.success else "✗"
-            print(f"{status} {result.name} ({result.response_time * 1000:.0f}ms)")
+            print(f"{status} {result.name} ({result.response_time}ms)")
 
     if args.generate:
         print("Generating HTML status page...")
         generate_html()
-        print(f"Status page generated: {OUTPUT_HTML}")
+        print(f"Status page generated: {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":

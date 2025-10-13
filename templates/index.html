@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Status Page</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,13 +11,22 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: sans-serif;
             background: #f5f5f5;
             padding: 20px;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .status-card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -32,7 +40,6 @@
         .header.operational { background: #10b981; }
         .header.degraded { background: #f59e0b; }
         .header.down { background: #ef4444; }
-        .header h1 { font-size: 2em; margin-bottom: 10px; }
         .header p { font-size: 1.1em; opacity: 0.95; }
         .header .last-updated {
             font-size: 0.85em;
@@ -79,168 +86,51 @@
         }
         .uptime-bar {
             display: flex;
-            gap: 2px;
+            gap: 1px;
             height: 40px;
             margin-top: 10px;
         }
-        .uptime-day {
+        .uptime-tick {
             flex: 1;
             background: #10b981;
             border-radius: 2px;
             position: relative;
         }
-        .uptime-day.down { background: #ef4444; }
-        .uptime-day.no-data { background: #e5e5e5; }
-        .uptime-stats {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #6b7280;
+        .uptime-tick.down {
+          background: #ef4444;
         }
-        .chart-container {
-            margin-top: 20px;
-            height: 200px;
-            position: relative;
+        .uptime-tick.no-data {
+          background: #e5e5e5;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header operational" id="status-header">
-            <h1>Status Page</h1>
-            <p id="status-message">Loading...</p>
-            <div class="last-updated">Last updated: <span id="last-updated">-</span> UTC</div>
-        </div>
+        <h1 class="title">Status Page</h1>
+        <div class="status-card">
+            <div class="header {{ overall_status }}">
+                <p>{{ status_message }}</p>
+                <div class="last-updated">Last updated: {{ last_updated }} UTC</div>
+            </div>
 
-        <div class="services" id="services-container">
-            <p style="text-align: center; padding: 40px; color: #6b7280;">Loading services...</p>
-        </div>
-    </div>
-
-    <script>
-        async function loadData() {
-            try {
-                const response = await fetch('data.json');
-                if (!response.ok) {
-                    throw new Error('Failed to load status data');
-                }
-                const data = await response.json();
-                renderPage(data);
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('status-message').textContent = 'Error loading status data';
-                document.getElementById('services-container').innerHTML =
-                    '<p style="text-align: center; padding: 40px; color: #ef4444;">Failed to load services data. Please try refreshing the page.</p>';
-            }
-        }
-
-        function renderPage(data) {
-            // Update header
-            const header = document.getElementById('status-header');
-            header.className = 'header ' + data.overall_status;
-            document.getElementById('status-message').textContent = data.status_message;
-            document.getElementById('last-updated').textContent = data.last_updated;
-
-            // Render services
-            const container = document.getElementById('services-container');
-            container.innerHTML = '';
-
-            data.services.forEach((service, index) => {
-                const serviceDiv = document.createElement('div');
-                serviceDiv.className = 'service';
-
-                serviceDiv.innerHTML = `
+            <div class="services">
+                {% for service in services %}
+                <div class="service">
                     <div class="service-header">
-                        <div class="service-name">${service.name}</div>
-                        <div class="service-status status-${service.current_status}">
-                            ${service.current_status_text}
+                        <div class="service-name">{{ service.name }}</div>
+                        <div class="service-status status-{{ service.current_status }}">
+                            {{ service.current_status_text }}
                         </div>
                     </div>
                     <div class="uptime-bar">
-                        ${service.uptime_days.map(day =>
-                            `<div class="uptime-day ${day.status}" title="${day.date}: ${day.uptime}% uptime"></div>`
-                        ).join('')}
+                        {% for _, tick in service.ticks.items() %}
+                        <div class="uptime-tick {{ tick.status }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
+                        {% endfor %}
                     </div>
-                    <div class="uptime-stats">
-                        30-day uptime: ${service.uptime_30d}% | Avg response time: ${service.avg_response_time}ms
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="chart-${index}"></canvas>
-                    </div>
-                `;
-
-                container.appendChild(serviceDiv);
-
-                // Render chart
-                if (service.chart_data && service.chart_data.timestamps.length > 0) {
-                    const ctx = document.getElementById(`chart-${index}`);
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: service.chart_data.timestamps.map(ts => {
-                                const date = new Date(ts);
-                                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            }),
-                            datasets: [{
-                                label: 'Response Time (ms)',
-                                data: service.chart_data.response_times,
-                                borderColor: service.current_status === 'operational' ? '#10b981' : '#ef4444',
-                                backgroundColor: service.current_status === 'operational' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 2,
-                                pointHoverRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return 'Response Time: ' + context.parsed.y + 'ms';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    display: true,
-                                    ticks: {
-                                        maxRotation: 45,
-                                        minRotation: 45,
-                                        maxTicksLimit: 10
-                                    }
-                                },
-                                y: {
-                                    display: true,
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + 'ms';
-                                        }
-                                    }
-                                }
-                            },
-                            interaction: {
-                                mode: 'nearest',
-                                axis: 'x',
-                                intersect: false
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        // Load data when page loads
-        loadData();
-    </script>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>

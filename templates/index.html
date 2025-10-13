@@ -102,13 +102,14 @@
         .uptime-tick.no-data {
           background: #e5e5e5;
         }
+        /*  TODO: need degraded yellow  */
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="title">Status Page</h1>
         <div class="status-card">
-            <div class="header {{ overall_status }}">
+            <div class="header {{ overall_status.value }}">
                 <p>{{ status_message }}</p>
                 <div class="last-updated">Last updated: {{ last_updated }} UTC</div>
             </div>
@@ -118,13 +119,13 @@
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">{{ service.name }}</div>
-                        <div class="service-status status-{{ service.current_status }}">
+                        <div class="service-status status-{{ service.current_status.value }}">
                             {{ service.current_status_text }}
                         </div>
                     </div>
                     <div class="uptime-bar">
                         {% for _, tick in service.ticks.items() %}
-                        <div class="uptime-tick {{ tick.status }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
+                        <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
                         {% endfor %}
                     </div>
                 </div>

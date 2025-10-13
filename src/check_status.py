@@ -151,7 +151,7 @@ class ServiceStats:
 async def check_mozz_us() -> bool:
     """Check https://mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://mozz.us")
+        response = await client.get("https://mozz.usdadadasdsa")
         return response.status_code == 200
 
 
@@ -186,6 +186,10 @@ async def check_ascii_mozz_us_7070() -> bool:
         response = await client.get("https://ascii.mozz.us:7070")
         return response.status_code == 200
 
+
+# TODO: Add more health checks
+# TODO: Add health check groups by protocol
+# TODO: Make it more compact
 
 # =============================================================================
 # HEALTH CHECK EXECUTION

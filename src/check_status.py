@@ -189,7 +189,7 @@ async def check_ascii_mozz_us_7070() -> bool:
 
 # TODO: Add more health checks
 # TODO: Add health check groups by protocol
-# TODO: Make it more compact
+# TODO: Make the layout more compact
 
 # =============================================================================
 # HEALTH CHECK EXECUTION

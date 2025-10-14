@@ -23,5 +23,5 @@ echo "Starting server on http://localhost:$PORT"
 # Open browser after a short delay (in background)
 (sleep 1 && open "http://localhost:$PORT") &
 
-# Start server in docs directory
-cd "$(dirname "$0")/../docs" && python3 -m http.server $PORT
+# Start server in dist directory
+cd "$(dirname "$0")/../dist" && python3 -m http.server $PORT

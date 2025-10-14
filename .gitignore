@@ -39,4 +39,4 @@ env/
 PLAN.md
 
 # Generated site (deployed via GitHub Actions artifact, not committed)
-docs/
+dist/

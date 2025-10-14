@@ -29,9 +29,9 @@ ROOT_DIR = Path(__file__).parent.parent
 # CONFIGURATION
 # =============================================================================
 
-HISTORY_DIR = ROOT_DIR / "data"
-OUTPUT_FILE = ROOT_DIR / "docs/index.html"
-TEMPLATE_FILE = ROOT_DIR / "templates/index.html"
+DATA_DIR = ROOT_DIR / "data"
+DIST_DIR = ROOT_DIR / "dist"
+TEMPLATE_DIR = ROOT_DIR / "templates"
 
 CHECK_TIMEOUT = 10.0  # seconds
 HISTORY_TICKS = 45  # days
@@ -433,7 +433,7 @@ def save_check_results(results: list[CheckResult], timestamp: int) -> None:
     date_str = dt.strftime("%Y%m%d")
 
     # Create history file path: data/2025/checks-20250114.csv
-    year_dir = HISTORY_DIR / year
+    year_dir = DATA_DIR / year
     history_file = year_dir / f"checks-{date_str}.csv"
 
     # Ensure directory exists
@@ -464,7 +464,7 @@ def load_check_results() -> list[CheckResult]:
         date_str = day.strftime("%Y%m%d")
 
         # Load from: data/2025/checks-20250114.csv
-        year_dir = HISTORY_DIR / year
+        year_dir = DATA_DIR / year
         history_file = year_dir / f"checks-{date_str}.csv"
 
         if not history_file.exists():
@@ -547,7 +547,8 @@ def generate_html() -> None:
     last_updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
     # Generate HTML with all data rendered server-side
-    template_content = TEMPLATE_FILE.read_text()
+    template_file = TEMPLATE_DIR / "index.html"
+    template_content = template_file.read_text()
     template = Template(template_content)
     html_content = template.render(
         overall_status=overall_status,
@@ -556,7 +557,10 @@ def generate_html() -> None:
         groups=groups,
     )
 
-    OUTPUT_FILE.write_text(html_content)
+    # Ensure output directory exists
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = DIST_DIR / "index.html"
+    output_file.write_text(html_content)
 
 
 # =============================================================================
@@ -583,7 +587,7 @@ async def main() -> None:
     if args.build:
         print("Generating HTML status page...")
         generate_html()
-        print(f"Status page generated: {OUTPUT_FILE}")
+        print("Status page generated.")
 
 
 if __name__ == "__main__":

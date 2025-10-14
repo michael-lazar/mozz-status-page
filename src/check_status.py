@@ -171,9 +171,39 @@ class ServiceData:
 # =============================================================================
 
 
+async def fetch_gopher(host: str, port: int = 70, selector: str = "") -> bytes:
+    """Check a gopher server by sending a request and reading response.
+
+    Args:
+        host: The gopher server hostname
+        port: The gopher server port (default 70)
+        selector: The gopher selector to request (default empty string)
+
+    Returns:
+        The response bytes from the server
+    """
+    reader, writer = await asyncio.wait_for(
+        asyncio.open_connection(host, port),
+        timeout=CHECK_TIMEOUT,
+    )
+
+    # Send gopher request (selector followed by CRLF)
+    request = f"{selector}\r\n".encode()
+    writer.write(request)
+    await writer.drain()
+
+    # Read full response
+    response = await asyncio.wait_for(reader.read(), timeout=CHECK_TIMEOUT)
+
+    writer.close()
+    await writer.wait_closed()
+
+    return response
+
+
 @register(
-    name="homepage",
-    display_name="Home Page",
+    name="www-homepage",
+    display_name="Homepage",
     url="https://mozz.us",
     group="Web",
 )
@@ -210,7 +240,12 @@ async def check_ascii_mozz_us() -> bool:
         return response.status_code == 200
 
 
-@register(name="git", display_name="Git", url="https://git.mozz.us", group="Web")
+@register(
+    name="git",
+    display_name="Git Mirror",
+    url="https://git.mozz.us",
+    group="Web",
+)
 async def check_git_mozz_us() -> bool:
     """Check https://git.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -229,6 +264,66 @@ async def check_ascii_mozz_us_7070() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://ascii.mozz.us:7070")
         return response.status_code == 200
+
+
+@register(
+    name="gopher-homepage",
+    display_name="Homepage",
+    url="gopher://mozz.us",
+    group="Gopher",
+)
+async def check_gopher_mozz_us() -> bool:
+    """Check gopher://mozz.us."""
+    response = await fetch_gopher("mozz.us")
+    return len(response) > 0
+
+
+@register(
+    name="hngopher",
+    display_name="HN Gopher",
+    url="gopher://hngopher.com",
+    group="Gopher",
+)
+async def check_gopher_hngopher() -> bool:
+    """Check gopher://hngopher.com."""
+    response = await fetch_gopher("hngopher.com")
+    return len(response) > 0
+
+
+@register(
+    name="cocktails",
+    display_name="Cocktail Database",
+    url="gopher://mozz.us:7003",
+    group="Gopher",
+)
+async def check_gopher_mozz_us_7003() -> bool:
+    """Check gopher://mozz.us:7003."""
+    response = await fetch_gopher("mozz.us", 7003)
+    return len(response) > 0
+
+
+@register(
+    name="flask-gopher",
+    display_name="Flask-Gopher",
+    url="gopher://mozz.us:7005",
+    group="Gopher",
+)
+async def check_gopher_mozz_us_7005() -> bool:
+    """Check gopher://mozz.us:7005."""
+    response = await fetch_gopher("mozz.us", 7005)
+    return len(response) > 0
+
+
+@register(
+    name="gopher-z",
+    display_name="Gopher-Z",
+    url="gopher://mozz.us:7006",
+    group="Gopher",
+)
+async def check_gopher_mozz_us_7006() -> bool:
+    """Check gopher://mozz.us:7006."""
+    response = await fetch_gopher("mozz.us", 7006)
+    return len(response) > 0
 
 
 # =============================================================================

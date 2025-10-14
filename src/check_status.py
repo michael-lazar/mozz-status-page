@@ -167,6 +167,17 @@ class ServiceData:
                 return "Unknown"
 
 
+@dataclass
+class ServiceGroup:
+    """A group of services."""
+
+    name: str | None
+    services: list[ServiceData]
+
+
+# TODO: Move portal, astrobotany, and hn-gopher to top
+# TODO: Make group names look like h2 with blue background
+
 # =============================================================================
 # HEALTH CHECK FUNCTIONS
 # =============================================================================
@@ -246,22 +257,21 @@ async def fetch_gemini(host: str, port: int, url: str) -> bytes:
 
 
 @register(
-    name="www-homepage",
-    display_name="Homepage",
-    url="https://mozz.us",
-    group="Web",
+    name="astrobotany",
+    display_name="Astrobotany",
+    url="gemini://astrobotany.mozz.us",
 )
-async def check_mozz_us() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://mozz.us")
-        return response.status_code == 200
+async def check_gemini_astrobotany() -> bool:
+    response = await fetch_gemini(
+        "astrobotany.mozz.us", 1965, "gemini://astrobotany.mozz.us/"
+    )
+    return response.startswith(b"20 text/gemini\r\n")
 
 
 @register(
     name="portal",
     display_name="Smolnet Portal",
     url="https://portal.mozz.us",
-    group="Web",
 )
 async def check_portal_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -270,10 +280,32 @@ async def check_portal_mozz_us() -> bool:
 
 
 @register(
+    name="hngopher",
+    display_name="HN Gopher",
+    url="gopher://hngopher.com",
+)
+async def check_gopher_hngopher() -> bool:
+    response = await fetch_tcp("hngopher.com", 70, b"\r\n")
+    return len(response) > 0
+
+
+@register(
+    name="www-homepage",
+    display_name="Homepage",
+    url="https://mozz.us",
+    group="WWW",
+)
+async def check_mozz_us() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://mozz.us")
+        return response.status_code == 200
+
+
+@register(
     name="ascii-gallery",
     display_name="ASCII Art Gallery",
     url="https://ascii.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_ascii_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -285,7 +317,7 @@ async def check_ascii_mozz_us() -> bool:
     name="git",
     display_name="Git Mirror",
     url="https://git.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_git_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -297,7 +329,7 @@ async def check_git_mozz_us() -> bool:
     name="emporium",
     display_name="ASCII Art Emporium",
     url="https://ascii.mozz.us:7070",
-    group="Web",
+    group="WWW",
 )
 async def check_ascii_mozz_us_7070() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -309,7 +341,7 @@ async def check_ascii_mozz_us_7070() -> bool:
     name="spring83",
     display_name="Spring '83",
     url="https://spring83.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_spring83() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -321,7 +353,7 @@ async def check_spring83() -> bool:
     name="shiftjis-art",
     display_name="ShiftJIS Art",
     url="https://aa.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_shiftjis_art() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -333,7 +365,7 @@ async def check_shiftjis_art() -> bool:
     name="goodvibes",
     display_name="Good Vibes Flash",
     url="https://goodvibes.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_goodvibes() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -342,10 +374,10 @@ async def check_goodvibes() -> bool:
 
 
 @register(
-    name="hsl",
-    display_name="The Human Software License",
+    name="license",
+    display_name="Human Software License",
     url="https://license.mozz.us",
-    group="Web",
+    group="WWW",
 )
 async def check_hsl() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -361,17 +393,6 @@ async def check_hsl() -> bool:
 )
 async def check_gopher_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 70, b"\r\n")
-    return len(response) > 0
-
-
-@register(
-    name="hngopher",
-    display_name="HN Gopher",
-    url="gopher://hngopher.com",
-    group="Gopher",
-)
-async def check_gopher_hngopher() -> bool:
-    response = await fetch_tcp("hngopher.com", 70, b"\r\n")
     return len(response) > 0
 
 
@@ -453,19 +474,6 @@ async def check_gemini_mozz_us() -> bool:
 
 
 @register(
-    name="gemini-astrobotany",
-    display_name="Astrobotany",
-    url="gemini://astrobotany.mozz.us",
-    group="Gemini",
-)
-async def check_gemini_astrobotany() -> bool:
-    response = await fetch_gemini(
-        "astrobotany.mozz.us", 1965, "gemini://astrobotany.mozz.us/"
-    )
-    return response.startswith(b"20 text/gemini\r\n")
-
-
-@register(
     name="gemini-chat",
     display_name="Gemini Chat",
     url="gemini://chat.mozz.us",
@@ -476,18 +484,19 @@ async def check_gemini_chat() -> bool:
     return response.startswith(b"20 text/gemini\r\n")
 
 
-@register(
-    name="cso",
-    display_name="CCSO Nameserver",
-    url="cso://mozz.us",
-    group="CSO",
-)
-async def check_cso() -> bool:
-    response = await fetch_tcp("mozz.us", 105, b"\r\nstatus\r\n", read_until=b"\r\n")
-    return len(response) > 0
+# @register(
+#     name="cso",
+#     display_name="CCSO Nameserver",
+#     url="cso://mozz.us",
+#     group="CSO",
+# )
+# async def check_cso() -> bool:
+#     response = await fetch_tcp("mozz.us", 105, b"\r\nstatus\r\n", read_until=b"\r\n")
+#     return len(response) > 0
 
 
 # TODO: telnet://
+# TODO: fix cso://
 
 
 # =============================================================================
@@ -613,6 +622,19 @@ def generate_html() -> None:
     data = load_check_results()
     services = calculate_all_service_stats(data)
 
+    # Group services by their group name
+    groups_dict: dict[str | None, list[ServiceData]] = {}
+    check_groups = {check["name"]: check["group"] for check in _checks}
+
+    for service in services:
+        group_name = check_groups.get(service.name)
+        if group_name not in groups_dict:
+            groups_dict[group_name] = []
+        groups_dict[group_name].append(service)
+
+    # Convert to list of ServiceGroup objects
+    groups = [ServiceGroup(name, services) for name, services in groups_dict.items()]
+
     # Determine overall status
     if not services:
         overall_status = Status.OPERATIONAL
@@ -636,7 +658,7 @@ def generate_html() -> None:
         overall_status=overall_status,
         status_message=status_message,
         last_updated=last_updated,
-        services=services,
+        groups=groups,
     )
 
     OUTPUT_FILE.write_text(html_content)

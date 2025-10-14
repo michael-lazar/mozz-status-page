@@ -9,11 +9,11 @@
 
 import argparse
 import asyncio
-import json
+import csv
 import ssl
 import traceback
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone, date
 from enum import Enum
 from pathlib import Path
@@ -172,13 +172,20 @@ class ServiceData:
 # =============================================================================
 
 
-async def fetch_tcp(host: str, port: int, request: bytes = b"") -> bytes:
+async def fetch_tcp(
+    host: str,
+    port: int,
+    request: bytes = b"",
+    read_until: bytes | None = None,
+) -> bytes:
     """Fetch data from a TCP server by sending a request and reading response.
 
     Args:
         host: The server hostname
         port: The server port
         request: The request bytes to send (default empty)
+        read_until: If specified, read until this byte sequence is found.
+                   If None, read until connection closes.
 
     Returns:
         The response bytes from the server
@@ -191,8 +198,11 @@ async def fetch_tcp(host: str, port: int, request: bytes = b"") -> bytes:
     writer.write(request)
     await writer.drain()
 
-    # Read full response
-    response = await asyncio.wait_for(reader.read(), timeout=CHECK_TIMEOUT)
+    if read_until:
+        future = reader.readuntil(read_until)
+    else:
+        future = reader.read()
+    response = await asyncio.wait_for(future, timeout=CHECK_TIMEOUT)
 
     writer.close()
     await writer.wait_closed()
@@ -473,7 +483,7 @@ async def check_gemini_chat() -> bool:
     group="CSO",
 )
 async def check_cso() -> bool:
-    response = await fetch_tcp("mozz.us", 105, b"status\r\n")
+    response = await fetch_tcp("mozz.us", 105, b"\r\nstatus\r\n", read_until=b"\r\n")
     return len(response) > 0
 
 
@@ -509,7 +519,7 @@ async def run_all_checks(timestamp: int) -> list[CheckResult]:
 
 
 def save_check_results(results: list[CheckResult], timestamp: int) -> None:
-    """Append check results to date-bucketed JSONL file."""
+    """Append check results to date-bucketed CSV file."""
     if not results:
         return
 
@@ -518,15 +528,17 @@ def save_check_results(results: list[CheckResult], timestamp: int) -> None:
     date_str = dt.strftime("%Y%m%d")
 
     # Create history file path for this date
-    history_file = HISTORY_DIR / f"history-{date_str}.jsonl"
+    history_file = HISTORY_DIR / f"history-{date_str}.csv"
 
     # Ensure directory exists
     HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Append each result as a separate line
-    with history_file.open("a") as fp:
+    # Append each result as a CSV line: timestamp,name,success
+    with history_file.open("a", newline="") as fp:
+        writer = csv.writer(fp)
         for result in results:
-            fp.write(json.dumps(asdict(result)) + "\n")
+            success_str = "Y" if result.success else "N"
+            writer.writerow([result.timestamp, result.name, success_str])
 
 
 # =============================================================================
@@ -535,7 +547,7 @@ def save_check_results(results: list[CheckResult], timestamp: int) -> None:
 
 
 def load_check_results() -> list[CheckResult]:
-    """Load all check results from date-bucketed JSONL files."""
+    """Load all check results from date-bucketed CSV files."""
     results = []
     now = datetime.now(timezone.utc)
 
@@ -543,15 +555,18 @@ def load_check_results() -> list[CheckResult]:
     for i in range(HISTORY_TICKS):
         day = now - timedelta(days=i)
         date_str = day.strftime("%Y%m%d")
-        history_file = HISTORY_DIR / f"history-{date_str}.jsonl"
+        history_file = HISTORY_DIR / f"history-{date_str}.csv"
 
         if not history_file.exists():
             continue
 
-        with history_file.open() as fp:
-            for line in fp:
-                data = json.loads(line)
-                result = CheckResult(**data)
+        with history_file.open(newline="") as fp:
+            reader = csv.reader(fp)
+            for row in reader:
+                timestamp = int(row[0])
+                name = row[1]
+                success = row[2] == "Y"
+                result = CheckResult(timestamp=timestamp, name=name, success=success)
                 results.append(result)
 
     return results

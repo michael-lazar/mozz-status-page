@@ -44,7 +44,7 @@ _checks: list[dict[str, Any]] = []
 
 def register(
     name: str,
-    display_name: str | None = None,
+    title: str | None = None,
     url: str | None = None,
     group: str | None = None,
 ):
@@ -52,7 +52,7 @@ def register(
 
     Args:
         name: Unique identifier for the health check
-        display_name: Human-readable name shown on the status page (defaults to name)
+        title: Human-readable name shown on the status page (defaults to name)
         url: Optional URL to link to from the status page
         group: Optional group for organizing services on the status page.
     """
@@ -61,7 +61,7 @@ def register(
         _checks.append(
             {
                 "name": name,
-                "display_name": display_name or name,
+                "title": title or name,
                 "url": url,
                 "group": group,
                 "func": func,
@@ -140,7 +140,7 @@ class ServiceData:
     """Data for a service."""
 
     name: str
-    display_name: str
+    title: str
     url: str | None
     ticks: dict[date, UptimeTick]
 
@@ -175,19 +175,13 @@ class ServiceGroup:
     services: list[ServiceData]
 
 
-# TODO: Move portal, astrobotany, and hn-gopher to top
-# TODO: Make group names look like h2 with blue background
-
 # =============================================================================
 # HEALTH CHECK FUNCTIONS
 # =============================================================================
 
 
 async def fetch_tcp(
-    host: str,
-    port: int,
-    request: bytes = b"",
-    read_until: bytes | None = None,
+    host: str, port: int, request: bytes = b"", read_until: bytes | None = None
 ) -> bytes:
     """Fetch data from a TCP server by sending a request and reading response.
 
@@ -256,247 +250,148 @@ async def fetch_gemini(host: str, port: int, url: str) -> bytes:
     return response
 
 
-@register(
-    name="astrobotany",
-    display_name="Astrobotany",
-    url="gemini://astrobotany.mozz.us",
-)
+@register("astrobotany", title="Astrobotany", url="gemini://astrobotany.mozz.us")
 async def check_gemini_astrobotany() -> bool:
-    response = await fetch_gemini(
-        "astrobotany.mozz.us", 1965, "gemini://astrobotany.mozz.us/"
-    )
+    response = await fetch_gemini("astrobotany.mozz.us", 1965, "gemini://astrobotany.mozz.us/")
     return response.startswith(b"20 text/gemini\r\n")
 
 
-@register(
-    name="portal",
-    display_name="Smolnet Portal",
-    url="https://portal.mozz.us",
-)
+@register("portal", title="Smolnet Portal", url="https://portal.mozz.us")
 async def check_portal_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://portal.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="hngopher",
-    display_name="HN Gopher",
-    url="gopher://hngopher.com",
-)
+@register("hngopher", title="HN Gopher", url="gopher://hngopher.com")
 async def check_gopher_hngopher() -> bool:
     response = await fetch_tcp("hngopher.com", 70, b"\r\n")
     return len(response) > 0
 
 
-@register(
-    name="www-homepage",
-    display_name="Homepage",
-    url="https://mozz.us",
-    group="WWW",
-)
+@register("www-homepage", title="Homepage", url="https://mozz.us", group="WWW")
 async def check_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="ascii-gallery",
-    display_name="ASCII Art Gallery",
-    url="https://ascii.mozz.us",
-    group="WWW",
-)
+@register("ascii-gallery", title="ASCII Art Gallery", url="https://ascii.mozz.us", group="WWW")
 async def check_ascii_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://ascii.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="git",
-    display_name="Git Mirror",
-    url="https://git.mozz.us",
-    group="WWW",
-)
+@register("git", title="Git Mirror", url="https://git.mozz.us", group="WWW")
 async def check_git_mozz_us() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://git.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="emporium",
-    display_name="ASCII Art Emporium",
-    url="https://ascii.mozz.us:7070",
-    group="WWW",
-)
+@register("emporium", title="ASCII Art Emporium", url="https://ascii.mozz.us:7070", group="WWW")
 async def check_ascii_mozz_us_7070() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://ascii.mozz.us:7070")
         return response.status_code == 200
 
 
-@register(
-    name="spring83",
-    display_name="Spring '83",
-    url="https://spring83.mozz.us",
-    group="WWW",
-)
+@register("spring83", title="Spring '83", url="https://spring83.mozz.us", group="WWW")
 async def check_spring83() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://spring83.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="shiftjis-art",
-    display_name="ShiftJIS Art",
-    url="https://aa.mozz.us",
-    group="WWW",
-)
+@register("shiftjis-art", title="ShiftJIS Art", url="https://aa.mozz.us", group="WWW")
 async def check_shiftjis_art() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://aa.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="goodvibes",
-    display_name="Good Vibes Flash",
-    url="https://goodvibes.mozz.us",
-    group="WWW",
-)
+@register("goodvibes", title="Good Vibes Flash", url="https://goodvibes.mozz.us", group="WWW")
 async def check_goodvibes() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://goodvibes.mozz.us")
         return response.status_code == 302
 
 
-@register(
-    name="license",
-    display_name="Human Software License",
-    url="https://license.mozz.us",
-    group="WWW",
-)
+@register("license", title="Human Software License", url="https://license.mozz.us", group="WWW")
 async def check_hsl() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://license.mozz.us")
         return response.status_code == 200
 
 
-@register(
-    name="gopher-homepage",
-    display_name="Gopher Homepage",
-    url="gopher://mozz.us",
-    group="Gopher",
-)
+@register("gopher-homepage", title="Gopher Homepage", url="gopher://mozz.us", group="Gopher")
 async def check_gopher_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 70, b"\r\n")
     return len(response) > 0
 
 
-@register(
-    name="cocktails",
-    display_name="Cocktail Database",
-    url="gopher://mozz.us:7003",
-    group="Gopher",
-)
+@register("cocktails", title="Cocktail Database", url="gopher://mozz.us:7003", group="Gopher")
 async def check_gopher_mozz_us_7003() -> bool:
     response = await fetch_tcp("mozz.us", 7003, b"\r\n")
     return len(response) > 0
 
 
-@register(
-    name="flask-gopher",
-    display_name="Flask-Gopher",
-    url="gopher://mozz.us:7005",
-    group="Gopher",
-)
+@register("flask-gopher", title="Flask-Gopher", url="gopher://mozz.us:7005", group="Gopher")
 async def check_gopher_mozz_us_7005() -> bool:
     response = await fetch_tcp("mozz.us", 7005, b"\r\n")
     return len(response) > 0
 
 
-@register(
-    name="gopher-z",
-    display_name="Gopher-Z",
-    url="gopher://mozz.us:7006",
-    group="Gopher",
-)
+@register("gopher-z", title="Gopher-Z", url="gopher://mozz.us:7006", group="Gopher")
 async def check_gopher_mozz_us_7006() -> bool:
     response = await fetch_tcp("mozz.us", 7006, b"\r\n")
     return len(response) > 0
 
 
-@register(
-    name="nex-homepage",
-    display_name="Nex Homepage",
-    url="nex://mozz.us",
-    group="Nex",
-)
+@register("nex-homepage", title="Nex Homepage", url="nex://mozz.us", group="Nex")
 async def check_nex_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 1900, b"\r\n")
     return b"ride the wave" in response
 
 
-@register(
-    name="finger",
-    display_name="Finger Directory",
-    url="finger://mozz.us/michael",
-    group="Finger",
-)
+@register("finger", title="Finger Directory", url="finger://mozz.us/michael", group="Finger")
 async def check_finger_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 79, b"michael\r\n")
     return b"michael@mozz.us" in response
 
 
-@register(
-    name="spartan-homepage",
-    display_name="Spartan Homepage",
-    url="spartan://mozz.us",
-    group="Spartan",
-)
+@register("spartan-homepage", title="Spartan Homepage", url="spartan://mozz.us", group="Spartan")
 async def check_spartan_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 300, b"mozz.us / 0\r\n")
     return response.startswith(b"2 text/gemini\r\n")
 
 
-@register(
-    name="gemini-homepage",
-    display_name="Gemini Homepage",
-    url="gemini://mozz.us",
-    group="Gemini",
-)
+@register("gemini-homepage", title="Gemini Homepage", url="gemini://mozz.us", group="Gemini")
 async def check_gemini_mozz_us() -> bool:
     response = await fetch_gemini("mozz.us", 1965, "gemini://mozz.us/")
     return response.startswith(b"20 text/gemini;")
 
 
-@register(
-    name="gemini-chat",
-    display_name="Gemini Chat",
-    url="gemini://chat.mozz.us",
-    group="Gemini",
-)
+@register("gemini-chat", title="Gemini Chat", url="gemini://chat.mozz.us", group="Gemini")
 async def check_gemini_chat() -> bool:
     response = await fetch_gemini("chat.mozz.us", 1965, "gemini://chat.mozz.us/")
     return response.startswith(b"20 text/gemini\r\n")
 
 
-# @register(
-#     name="cso",
-#     display_name="CCSO Nameserver",
-#     url="cso://mozz.us",
-#     group="CSO",
-# )
-# async def check_cso() -> bool:
-#     response = await fetch_tcp("mozz.us", 105, b"\r\nstatus\r\n", read_until=b"\r\n")
-#     return len(response) > 0
+@register(name="cso", title="CCSO Nameserver", url="cso://mozz.us", group="CSO")
+async def check_cso() -> bool:
+    expected = b"200:Database ready."
+    response = await fetch_tcp("mozz.us", 105, b"status\r\n", read_until=expected)
+    return response == expected
 
 
-# TODO: telnet://
-# TODO: fix cso://
+@register(name="telnet", title="Telnet Server", url="telnet://mozz.us", group="Telnet")
+async def check_telnet() -> bool:
+    # Telnet server sends negotiation data immediately upon connection
+    # Read a small amount to verify the server is responding
+    response = await fetch_tcp("mozz.us", 23, b"", read_until=b"\xff")
+    return len(response) > 0
 
 
 # =============================================================================
@@ -521,9 +416,7 @@ async def run_single_check(name: str, func: Callable, timestamp: int) -> CheckRe
 
 async def run_all_checks(timestamp: int) -> list[CheckResult]:
     """Run all registered health checks concurrently."""
-    tasks = [
-        run_single_check(check["name"], check["func"], timestamp) for check in _checks
-    ]
+    tasks = [run_single_check(check["name"], check["func"], timestamp) for check in _checks]
     return await asyncio.gather(*tasks)
 
 
@@ -595,7 +488,7 @@ def calculate_all_service_stats(results: list[CheckResult]) -> list[ServiceData]
 
         service_map[check["name"]] = ServiceData(
             name=check["name"],
-            display_name=check["display_name"],
+            title=check["title"],
             url=check["url"],
             ticks=ticks,
         )
@@ -671,9 +564,7 @@ def generate_html() -> None:
 
 async def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Health checker and status page generator"
-    )
+    parser = argparse.ArgumentParser(description="Health checker and status page generator")
     parser.add_argument(
         "--check",
         action="store_true",

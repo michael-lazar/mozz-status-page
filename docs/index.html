@@ -77,6 +77,13 @@
             font-weight: 600;
             color: #1f2937;
         }
+        .service-url {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.85em;
+            font-weight: 400;
+            color: #3b82f6;
+        }
         .service-status {
             padding: 6px 12px;
             border-radius: 4px;
@@ -101,7 +108,6 @@
             flex: 1;
             border-radius: 4px;
             position: relative;
-            cursor: pointer;
             transition: opacity 0.2s;
         }
         .uptime-tick:hover {
@@ -127,10 +133,6 @@
         }
         .footer a {
             color: #3b82f6;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -138,17 +140,22 @@
     <div class="container">
         <h1 class="title">Mozz Status Page</h1>
         <div class="status-card">
-            <div class="header down">
-                <p>Some systems are experiencing issues</p>
-                <div class="last-updated">Last updated: 2025-10-14 02:00:11 UTC</div>
+            <div class="header degraded">
+                <p>System performance degraded</p>
+                <div class="last-updated">Last updated: 2025-10-14 02:26:56 UTC</div>
             </div>
             <div class="services">
                 
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">https://mozz.us</div>
-                        <div class="service-status down">
-                            Down
+                        <div>
+                            <div class="service-name">Home Page</div>
+                            
+                            <a href="https://mozz.us" target="_blank" class="service-url">https://mozz.us</a>
+                            
+                        </div>
+                        <div class="service-status no-data">
+                            No Data
                         </div>
                     </div>
                     <div class="uptime-bar">
@@ -270,7 +277,7 @@
                         
                         
                         
-                        <div class="uptime-tick degraded" title="2025-10-13: 75.0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-10-13: No data"></div>
                         
                         
                     </div>
@@ -278,9 +285,14 @@
                 
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">https://ascii.mozz.us</div>
-                        <div class="service-status operational">
-                            Operational
+                        <div>
+                            <div class="service-name">Smolnet Portal</div>
+                            
+                            <a href="https://portal.mozz.us" target="_blank" class="service-url">https://portal.mozz.us</a>
+                            
+                        </div>
+                        <div class="service-status no-data">
+                            No Data
                         </div>
                     </div>
                     <div class="uptime-bar">
@@ -402,7 +414,7 @@
                         
                         
                         
-                        <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-10-13: No data"></div>
                         
                         
                     </div>
@@ -410,9 +422,14 @@
                 
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">https://portal.mozz.us</div>
-                        <div class="service-status operational">
-                            Operational
+                        <div>
+                            <div class="service-name">ASCII Art Gallery</div>
+                            
+                            <a href="https://ascii.mozz.us" target="_blank" class="service-url">https://ascii.mozz.us</a>
+                            
+                        </div>
+                        <div class="service-status no-data">
+                            No Data
                         </div>
                     </div>
                     <div class="uptime-bar">
@@ -534,7 +551,7 @@
                         
                         
                         
-                        <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-10-13: No data"></div>
                         
                         
                     </div>
@@ -542,9 +559,14 @@
                 
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">https://git.mozz.us</div>
-                        <div class="service-status operational">
-                            Operational
+                        <div>
+                            <div class="service-name">Git</div>
+                            
+                            <a href="https://git.mozz.us" target="_blank" class="service-url">https://git.mozz.us</a>
+                            
+                        </div>
+                        <div class="service-status no-data">
+                            No Data
                         </div>
                     </div>
                     <div class="uptime-bar">
@@ -666,7 +688,7 @@
                         
                         
                         
-                        <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-10-13: No data"></div>
                         
                         
                     </div>
@@ -674,9 +696,14 @@
                 
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">https://ascii.mozz.us:7070</div>
-                        <div class="service-status operational">
-                            Operational
+                        <div>
+                            <div class="service-name">ASCII Art Emporium</div>
+                            
+                            <a href="https://ascii.mozz.us:7070" target="_blank" class="service-url">https://ascii.mozz.us:7070</a>
+                            
+                        </div>
+                        <div class="service-status no-data">
+                            No Data
                         </div>
                     </div>
                     <div class="uptime-bar">
@@ -798,7 +825,7 @@
                         
                         
                         
-                        <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-10-13: No data"></div>
                         
                         
                     </div>

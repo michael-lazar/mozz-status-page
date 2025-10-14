@@ -41,11 +41,31 @@ HISTORY_TICKS = 30  # days
 _checks: list[dict[str, Any]] = []
 
 
-def register(display_name: str):
-    """Decorator to register a health check function."""
+def register(
+    name: str,
+    display_name: str | None = None,
+    url: str | None = None,
+    group: str | None = None,
+):
+    """Decorator to register a health check function.
+
+    Args:
+        name: Unique identifier for the health check
+        display_name: Human-readable name shown on the status page (defaults to name)
+        url: Optional URL to link to from the status page
+        group: Optional group for organizing services on the status page.
+    """
 
     def decorator(func: Callable) -> Callable:
-        _checks.append({"name": display_name, "func": func})
+        _checks.append(
+            {
+                "name": name,
+                "display_name": display_name or name,
+                "url": url,
+                "group": group,
+                "func": func,
+            }
+        )
         return func
 
     return decorator
@@ -57,6 +77,8 @@ def register(display_name: str):
 
 
 class Status(str, Enum):
+    """Status of a service."""
+
     OPERATIONAL = "operational"
     DEGRADED = "degraded"
     DOWN = "down"
@@ -113,10 +135,12 @@ class UptimeTick:
 
 
 @dataclass
-class ServiceStats:
-    """Statistics for a service."""
+class ServiceData:
+    """Data for a service."""
 
     name: str
+    display_name: str
+    url: str | None
     ticks: dict[date, UptimeTick]
 
     @property
@@ -147,7 +171,12 @@ class ServiceStats:
 # =============================================================================
 
 
-@register(display_name="https://mozz.us")
+@register(
+    name="homepage",
+    display_name="Home Page",
+    url="https://mozz.us",
+    group="Web",
+)
 async def check_mozz_us() -> bool:
     """Check https://mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -155,15 +184,12 @@ async def check_mozz_us() -> bool:
         return response.status_code == 200
 
 
-@register(display_name="https://ascii.mozz.us")
-async def check_ascii_mozz_us() -> bool:
-    """Check https://ascii.mozz.us."""
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://ascii.mozz.us")
-        return response.status_code == 200
-
-
-@register(display_name="https://portal.mozz.us")
+@register(
+    name="portal",
+    display_name="Smolnet Portal",
+    url="https://portal.mozz.us",
+    group="Web",
+)
 async def check_portal_mozz_us() -> bool:
     """Check https://portal.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -171,7 +197,20 @@ async def check_portal_mozz_us() -> bool:
         return response.status_code == 200
 
 
-@register(display_name="https://git.mozz.us")
+@register(
+    name="ascii-gallery",
+    display_name="ASCII Art Gallery",
+    url="https://ascii.mozz.us",
+    group="Web",
+)
+async def check_ascii_mozz_us() -> bool:
+    """Check https://ascii.mozz.us."""
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://ascii.mozz.us")
+        return response.status_code == 200
+
+
+@register(name="git", display_name="Git", url="https://git.mozz.us", group="Web")
 async def check_git_mozz_us() -> bool:
     """Check https://git.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -179,7 +218,12 @@ async def check_git_mozz_us() -> bool:
         return response.status_code == 200
 
 
-@register(display_name="https://ascii.mozz.us:7070")
+@register(
+    name="emporium",
+    display_name="ASCII Art Emporium",
+    url="https://ascii.mozz.us:7070",
+    group="Web",
+)
 async def check_ascii_mozz_us_7070() -> bool:
     """Check https://ascii.mozz.us:7070."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
@@ -187,10 +231,6 @@ async def check_ascii_mozz_us_7070() -> bool:
         return response.status_code == 200
 
 
-# TODO: Add more health checks
-# TODO: Add health check groups by protocol
-# TODO: Copy style from https://stats.uptimerobot.com/ZTxMpY8cbz
-# TODO: Add a readme
 # =============================================================================
 # HEALTH CHECK EXECUTION
 # =============================================================================
@@ -265,36 +305,40 @@ def load_check_results() -> list[CheckResult]:
     return results
 
 
-def calculate_all_service_stats(results: list[CheckResult]) -> list[ServiceStats]:
+def calculate_all_service_stats(results: list[CheckResult]) -> list[ServiceData]:
     """Calculate statistics for all services in a single pass."""
 
     today = datetime.today()
 
-    stats_map: dict[str, ServiceStats] = {}
-
+    service_map: dict[str, ServiceData] = {}
     for check in _checks:
         ticks = {}
         for day_offset in range(HISTORY_TICKS - 1, -1, -1):  # noqa
             tick_date = (today - timedelta(days=day_offset)).date()
             ticks[tick_date] = UptimeTick(date=tick_date, results=[])
 
-        stats_map[check["name"]] = ServiceStats(name=check["name"], ticks=ticks)
+        service_map[check["name"]] = ServiceData(
+            name=check["name"],
+            display_name=check["display_name"],
+            url=check["url"],
+            ticks=ticks,
+        )
 
     for result in results:
-        service_stats = stats_map.get(result.name)
-        if not service_stats:
+        service = service_map.get(result.name)
+        if not service:
             continue
 
         timestamp = datetime.fromtimestamp(result.timestamp, tz=timezone.utc)
         result_date = timestamp.date()
 
-        tick = service_stats.ticks.get(result_date)
+        tick = service.ticks.get(result_date)
         if not tick:
             continue
 
         tick.results.append(result.success)
 
-    return list(stats_map.values())
+    return list(service_map.values())
 
 
 def generate_html() -> None:

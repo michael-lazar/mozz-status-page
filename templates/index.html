@@ -77,6 +77,13 @@
             font-weight: 600;
             color: #1f2937;
         }
+        .service-url {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.85em;
+            font-weight: 400;
+            color: #3b82f6;
+        }
         .service-status {
             padding: 6px 12px;
             border-radius: 4px;
@@ -126,10 +133,6 @@
         }
         .footer a {
             color: #3b82f6;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -145,7 +148,12 @@
                 {% for service in services %}
                 <div class="service">
                     <div class="service-header">
-                        <div class="service-name">{{ service.name }}</div>
+                        <div>
+                            <div class="service-name">{{ service.display_name }}</div>
+                            {% if service.url %}
+                            <a href="{{ service.url }}" target="_blank" class="service-url">{{ service.url }}</a>
+                            {% endif %}
+                        </div>
                         <div class="service-status {{ service.current_status.value }}">
                             {{ service.current_status_text }}
                         </div>

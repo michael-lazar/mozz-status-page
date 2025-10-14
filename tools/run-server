@@ -24,4 +24,4 @@ echo "Starting server on http://localhost:$PORT"
 (sleep 1 && open "http://localhost:$PORT") &
 
 # Start server in docs directory
-cd "$(dirname "$0")/docs" && python3 -m http.server $PORT
+cd "$(dirname "$0")/../docs" && python3 -m http.server $PORT

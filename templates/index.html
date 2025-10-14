@@ -40,9 +40,6 @@
         .header.operational {
           background: #10b981;
         }
-        .header.degraded {
-          background: #f59e0b;
-        }
         .header.down {
           background: #ef4444;
         }
@@ -176,8 +173,8 @@
                                     <a href="{{ service.url }}" target="_blank" class="service-url">{{ service.url }}</a>
                                     {%- endif %}
                                 </div>
-                                <div class="service-status {{ service.current_status.value }}">
-                                    {{ service.current_status_text }}
+                                <div class="service-status {{ service.status.value }}">
+                                    {{ service.status_text }}
                                 </div>
                             </div>
                             <div class="uptime-bar">
@@ -185,7 +182,7 @@
                                 {%- if tick.status.value == 'no-data' %}
                                 <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: No data"></div>
                                 {%- else %}
-                                <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
+                                <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: {{ "%.2f"|format(tick.uptime) }}% uptime"></div>
                                 {%- endif %}
                                 {%- endfor %}
                             </div>

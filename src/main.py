@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone, date
 from enum import Enum
 from pathlib import Path
 from typing import Any
+from functools import cached_property
 
 import httpx
 from jinja2 import Template
@@ -77,8 +78,15 @@ def register(
 # =============================================================================
 
 
-class Status(str, Enum):
-    """Status of a service."""
+class ServiceStatus(str, Enum):
+    """Overall status of a service (current state)."""
+
+    OPERATIONAL = "operational"
+    DOWN = "down"
+
+
+class TickStatus(str, Enum):
+    """Status of an uptime tick (aggregated over a time period)."""
 
     OPERATIONAL = "operational"
     DEGRADED = "degraded"
@@ -102,30 +110,21 @@ class UptimeTick:
     date: date
     results: list[bool]
 
-    @property
-    def current_status(self) -> Status:
+    @cached_property
+    def status(self) -> TickStatus:
+        """Get the aggregated status for the entire tick period."""
         if not self.results:
-            return Status.NO_DATA
-
-        if self.results[-1]:
-            return Status.OPERATIONAL
-        else:
-            return Status.DOWN
-
-    @property
-    def status(self) -> Status:
-        if not self.results:
-            return Status.NO_DATA
+            return TickStatus.NO_DATA
 
         match self.uptime:
             case 100:
-                return Status.OPERATIONAL
+                return TickStatus.OPERATIONAL
             case 0:
-                return Status.DOWN
+                return TickStatus.DOWN
             case _:
-                return Status.DEGRADED
+                return TickStatus.DEGRADED
 
-    @property
+    @cached_property
     def uptime(self) -> float:
         if not self.results:
             return 0
@@ -144,27 +143,30 @@ class ServiceData:
     url: str | None
     ticks: dict[date, UptimeTick]
 
-    @property
-    def current_status(self) -> Status:
+    @cached_property
+    def status(self) -> ServiceStatus:
         if not self.ticks:
-            return Status.NO_DATA
+            return ServiceStatus.OPERATIONAL
 
-        return self.ticks[max(self.ticks)].current_status
+        last_tick = self.ticks[max(self.ticks)]
+        if not last_tick.results:
+            return ServiceStatus.OPERATIONAL
 
-    @property
-    def current_status_text(self) -> str:
+        if last_tick.results[-1]:
+            return ServiceStatus.OPERATIONAL
+        else:
+            return ServiceStatus.DOWN
+
+    @cached_property
+    def status_text(self) -> str:
         """Get human-readable status text."""
-        match self.current_status:
-            case Status.OPERATIONAL:
+        match self.status:
+            case ServiceStatus.OPERATIONAL:
                 return "Operational"
-            case Status.DEGRADED:
-                return "Degraded"
-            case Status.DOWN:
+            case ServiceStatus.DOWN:
                 return "Down"
-            case Status.NO_DATA:
-                return "No Data"
             case _:
-                return "Unknown"
+                raise ValueError()
 
 
 @dataclass
@@ -529,18 +531,12 @@ def generate_html() -> None:
     groups = [ServiceGroup(name, services) for name, services in groups_dict.items()]
 
     # Determine overall status
-    if not services:
-        overall_status = Status.OPERATIONAL
-        status_message = "No services configured"
-    elif all(s.current_status == Status.OPERATIONAL for s in services):
-        overall_status = Status.OPERATIONAL
-        status_message = "All systems operational"
-    elif any(s.current_status == Status.DOWN for s in services):
-        overall_status = Status.DOWN
+    if any(s.status == ServiceStatus.DOWN for s in services):
+        overall_status = ServiceStatus.DOWN
         status_message = "Some systems are experiencing issues"
     else:
-        overall_status = Status.DEGRADED
-        status_message = "System performance degraded"
+        overall_status = ServiceStatus.OPERATIONAL
+        status_message = "All systems operational"
 
     last_updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -565,23 +561,15 @@ def generate_html() -> None:
 async def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Health checker and status page generator")
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Run health checks",
-    )
-    parser.add_argument(
-        "--generate",
-        action="store_true",
-        help="Generate HTML status page",
-    )
+    parser.add_argument("--check", action="store_true", help="Run health checks")
+    parser.add_argument("--build", action="store_true", help="Rebuild HTML status page")
 
     args = parser.parse_args()
 
     # Default to doing both if no args specified
-    if not args.check and not args.generate:
+    if not args.check and not args.build:
         args.check = True
-        args.generate = True
+        args.build = True
 
     if args.check:
         print("Running health checks...")
@@ -592,7 +580,7 @@ async def main() -> None:
             status = "✓" if result.success else "✗"
             print(f"{status} {result.name}")
 
-    if args.generate:
+    if args.build:
         print("Generating HTML status page...")
         generate_html()
         print(f"Status page generated: {OUTPUT_FILE}")

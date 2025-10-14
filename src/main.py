@@ -34,7 +34,7 @@ OUTPUT_FILE = ROOT_DIR / "docs/index.html"
 TEMPLATE_FILE = ROOT_DIR / "templates/index.html"
 
 CHECK_TIMEOUT = 10.0  # seconds
-HISTORY_TICKS = 30  # days
+HISTORY_TICKS = 45  # days
 
 # =============================================================================
 # HEALTH CHECK REGISTRY
@@ -313,7 +313,7 @@ async def check_shiftjis_art() -> bool:
         return response.status_code == 200
 
 
-@register("goodvibes", title="Good Vibes Flash", url="https://goodvibes.mozz.us", group="WWW")
+@register("goodvibes", title="Good Vibes", url="https://goodvibes.mozz.us", group="WWW")
 async def check_goodvibes() -> bool:
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://goodvibes.mozz.us")
@@ -569,13 +569,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description="Health checker and status page generator")
     parser.add_argument("--check", action="store_true", help="Run health checks")
     parser.add_argument("--build", action="store_true", help="Rebuild HTML status page")
-
     args = parser.parse_args()
-
-    # Default to doing both if no args specified
-    if not args.check and not args.build:
-        args.check = True
-        args.build = True
 
     if args.check:
         print("Running health checks...")

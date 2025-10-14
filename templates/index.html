@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Page</title>
+    <title>Mozz Status Page</title>
     <style>
         * {
             margin: 0;
@@ -33,14 +33,22 @@
             overflow: hidden;
         }
         .header {
-            padding: 40px;
+            padding: 20px;
             text-align: center;
             color: white;
         }
-        .header.operational { background: #10b981; }
-        .header.degraded { background: #f59e0b; }
-        .header.down { background: #ef4444; }
-        .header p { font-size: 1.1em; opacity: 0.95; }
+        .header.operational {
+          background: #10b981;
+        }
+        .header.degraded {
+          background: #f59e0b;
+        }
+        .header.down {
+          background: #ef4444;
+        }
+        .header p {
+          font-size: 1.1em; opacity: 0.95;
+        }
         .header .last-updated {
             font-size: 0.85em;
             opacity: 0.8;
@@ -50,8 +58,8 @@
             padding: 40px;
         }
         .service {
-            margin-bottom: 40px;
-            padding-bottom: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
             border-bottom: 1px solid #e5e5e5;
         }
         .service:last-child {
@@ -63,7 +71,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
         }
         .service-name {
             font-size: 1.2em;
@@ -76,25 +83,34 @@
             font-size: 0.9em;
             font-weight: 500;
         }
-        .status-operational {
+        .service-status.operational {
             background: #d1fae5;
             color: #065f46;
         }
-        .status-down {
+        .service-status.down {
             background: #fee2e2;
             color: #991b1b;
         }
         .uptime-bar {
             display: flex;
-            gap: 1px;
+            gap: 2px;
             height: 40px;
             margin-top: 10px;
         }
         .uptime-tick {
             flex: 1;
-            background: #10b981;
-            border-radius: 2px;
+            border-radius: 4px;
             position: relative;
+            transition: opacity 0.2s;
+        }
+        .uptime-tick:hover {
+            opacity: 0.8;
+        }
+        .uptime-tick.operational {
+          background: #10b981;
+        }
+        .uptime-tick.degraded {
+          background: #f59e0b;
         }
         .uptime-tick.down {
           background: #ef4444;
@@ -102,35 +118,53 @@
         .uptime-tick.no-data {
           background: #e5e5e5;
         }
-        /*  TODO: need degraded yellow  */
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 20px;
+            color: #6b7280;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Status Page</h1>
+        <h1 class="title">Mozz Status Page</h1>
         <div class="status-card">
             <div class="header {{ overall_status.value }}">
                 <p>{{ status_message }}</p>
                 <div class="last-updated">Last updated: {{ last_updated }} UTC</div>
             </div>
-
             <div class="services">
                 {% for service in services %}
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">{{ service.name }}</div>
-                        <div class="service-status status-{{ service.current_status.value }}">
+                        <div class="service-status {{ service.current_status.value }}">
                             {{ service.current_status_text }}
                         </div>
                     </div>
                     <div class="uptime-bar">
                         {% for _, tick in service.ticks.items() %}
+                        {% if tick.status.value == 'no-data' %}
+                        <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: No data"></div>
+                        {% else %}
                         <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
+        </div>
+        <div class="footer">
+            <a href="https://github.com/michael-lazar/mozz-status-page" target="_blank">View source on GitHub</a>
         </div>
     </div>
 </body>

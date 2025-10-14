@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Page</title>
+    <title>Mozz Status Page</title>
     <style>
         * {
             margin: 0;
@@ -33,14 +33,22 @@
             overflow: hidden;
         }
         .header {
-            padding: 40px;
+            padding: 20px;
             text-align: center;
             color: white;
         }
-        .header.operational { background: #10b981; }
-        .header.degraded { background: #f59e0b; }
-        .header.down { background: #ef4444; }
-        .header p { font-size: 1.1em; opacity: 0.95; }
+        .header.operational {
+          background: #10b981;
+        }
+        .header.degraded {
+          background: #f59e0b;
+        }
+        .header.down {
+          background: #ef4444;
+        }
+        .header p {
+          font-size: 1.1em; opacity: 0.95;
+        }
         .header .last-updated {
             font-size: 0.85em;
             opacity: 0.8;
@@ -50,8 +58,8 @@
             padding: 40px;
         }
         .service {
-            margin-bottom: 40px;
-            padding-bottom: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
             border-bottom: 1px solid #e5e5e5;
         }
         .service:last-child {
@@ -63,7 +71,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
         }
         .service-name {
             font-size: 1.2em;
@@ -76,25 +83,35 @@
             font-size: 0.9em;
             font-weight: 500;
         }
-        .status-operational {
+        .service-status.operational {
             background: #d1fae5;
             color: #065f46;
         }
-        .status-down {
+        .service-status.down {
             background: #fee2e2;
             color: #991b1b;
         }
         .uptime-bar {
             display: flex;
-            gap: 1px;
+            gap: 2px;
             height: 40px;
             margin-top: 10px;
         }
         .uptime-tick {
             flex: 1;
-            background: #10b981;
-            border-radius: 2px;
+            border-radius: 4px;
             position: relative;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .uptime-tick:hover {
+            opacity: 0.8;
+        }
+        .uptime-tick.operational {
+          background: #10b981;
+        }
+        .uptime-tick.degraded {
+          background: #f59e0b;
         }
         .uptime-tick.down {
           background: #ef4444;
@@ -102,87 +119,159 @@
         .uptime-tick.no-data {
           background: #e5e5e5;
         }
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 20px;
+            color: #6b7280;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Status Page</h1>
+        <h1 class="title">Mozz Status Page</h1>
         <div class="status-card">
             <div class="header down">
                 <p>Some systems are experiencing issues</p>
-                <div class="last-updated">Last updated: 2025-10-13 17:05:12 UTC</div>
+                <div class="last-updated">Last updated: 2025-10-14 02:00:11 UTC</div>
             </div>
-
             <div class="services">
                 
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">https://mozz.us</div>
-                        <div class="service-status status-down">
+                        <div class="service-status down">
                             Down
                         </div>
                     </div>
                     <div class="uptime-bar">
                         
-                        <div class="uptime-tick no-data" title="2025-09-14: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-15: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-14: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-16: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-17: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-18: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-15: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-19: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-20: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-21: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-16: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-22: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-23: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-24: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-17: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-25: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-26: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-27: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-18: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-28: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-29: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-30: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-19: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-01: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-02: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-03: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-20: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-04: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-05: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-06: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-21: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-07: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-08: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-09: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-22: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-10: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-11: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-12: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-23: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-24: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-25: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-26: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-27: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-28: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-29: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-30: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-01: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-02: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-03: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-04: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-05: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-06: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-07: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-08: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-09: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-10: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-11: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-12: No data"></div>
+                        
+                        
                         
                         <div class="uptime-tick degraded" title="2025-10-13: 75.0% uptime"></div>
+                        
                         
                     </div>
                 </div>
@@ -190,71 +279,131 @@
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">https://ascii.mozz.us</div>
-                        <div class="service-status status-operational">
+                        <div class="service-status operational">
                             Operational
                         </div>
                     </div>
                     <div class="uptime-bar">
                         
-                        <div class="uptime-tick no-data" title="2025-09-14: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-15: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-14: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-16: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-17: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-18: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-15: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-19: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-20: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-21: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-16: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-22: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-23: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-24: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-17: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-25: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-26: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-27: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-18: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-28: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-29: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-30: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-19: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-01: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-02: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-03: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-20: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-04: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-05: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-06: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-21: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-07: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-08: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-09: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-22: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-10: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-11: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-12: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-23: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-24: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-25: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-26: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-27: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-28: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-29: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-30: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-01: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-02: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-03: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-04: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-05: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-06: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-07: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-08: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-09: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-10: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-11: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-12: No data"></div>
+                        
+                        
                         
                         <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        
                         
                     </div>
                 </div>
@@ -262,71 +411,131 @@
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">https://portal.mozz.us</div>
-                        <div class="service-status status-operational">
+                        <div class="service-status operational">
                             Operational
                         </div>
                     </div>
                     <div class="uptime-bar">
                         
-                        <div class="uptime-tick no-data" title="2025-09-14: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-15: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-14: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-16: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-17: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-18: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-15: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-19: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-20: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-21: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-16: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-22: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-23: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-24: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-17: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-25: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-26: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-27: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-18: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-28: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-29: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-30: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-19: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-01: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-02: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-03: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-20: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-04: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-05: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-06: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-21: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-07: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-08: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-09: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-22: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-10: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-11: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-12: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-23: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-24: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-25: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-26: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-27: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-28: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-29: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-30: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-01: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-02: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-03: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-04: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-05: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-06: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-07: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-08: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-09: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-10: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-11: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-12: No data"></div>
+                        
+                        
                         
                         <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        
                         
                     </div>
                 </div>
@@ -334,71 +543,131 @@
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">https://git.mozz.us</div>
-                        <div class="service-status status-operational">
+                        <div class="service-status operational">
                             Operational
                         </div>
                     </div>
                     <div class="uptime-bar">
                         
-                        <div class="uptime-tick no-data" title="2025-09-14: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-15: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-14: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-16: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-17: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-18: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-15: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-19: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-20: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-21: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-16: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-22: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-23: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-24: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-17: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-25: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-26: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-27: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-18: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-28: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-29: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-30: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-19: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-01: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-02: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-03: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-20: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-04: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-05: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-06: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-21: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-07: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-08: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-09: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-22: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-10: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-11: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-12: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-23: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-24: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-25: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-26: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-27: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-28: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-29: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-30: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-01: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-02: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-03: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-04: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-05: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-06: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-07: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-08: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-09: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-10: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-11: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-12: No data"></div>
+                        
+                        
                         
                         <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        
                         
                     </div>
                 </div>
@@ -406,76 +675,139 @@
                 <div class="service">
                     <div class="service-header">
                         <div class="service-name">https://ascii.mozz.us:7070</div>
-                        <div class="service-status status-operational">
+                        <div class="service-status operational">
                             Operational
                         </div>
                     </div>
                     <div class="uptime-bar">
                         
-                        <div class="uptime-tick no-data" title="2025-09-14: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-15: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-14: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-16: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-17: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-18: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-15: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-19: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-20: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-21: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-16: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-22: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-23: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-24: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-17: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-25: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-26: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-27: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-18: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-28: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-29: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-09-30: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-19: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-01: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-02: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-03: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-20: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-04: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-05: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-06: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-21: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-07: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-08: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-09: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-22: No data"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-10: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-11: 0% uptime"></div>
                         
-                        <div class="uptime-tick no-data" title="2025-10-12: 0% uptime"></div>
+                        <div class="uptime-tick no-data" title="2025-09-23: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-24: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-25: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-26: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-27: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-28: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-29: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-09-30: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-01: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-02: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-03: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-04: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-05: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-06: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-07: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-08: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-09: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-10: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-11: No data"></div>
+                        
+                        
+                        
+                        <div class="uptime-tick no-data" title="2025-10-12: No data"></div>
+                        
+                        
                         
                         <div class="uptime-tick operational" title="2025-10-13: 100.0% uptime"></div>
+                        
                         
                     </div>
                 </div>
                 
             </div>
+        </div>
+        <div class="footer">
+            <a href="https://github.com/michael-lazar/mozz-status-page" target="_blank">View source on GitHub</a>
         </div>
     </div>
 </body>

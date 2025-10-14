@@ -145,30 +145,30 @@
                 <div class="last-updated">Last updated: {{ last_updated }} UTC</div>
             </div>
             <div class="services">
-                {% for service in services %}
+                {%- for service in services %}
                 <div class="service">
                     <div class="service-header">
                         <div>
                             <div class="service-name">{{ service.display_name }}</div>
-                            {% if service.url %}
+                            {%- if service.url %}
                             <a href="{{ service.url }}" target="_blank" class="service-url">{{ service.url }}</a>
-                            {% endif %}
+                            {%- endif %}
                         </div>
                         <div class="service-status {{ service.current_status.value }}">
                             {{ service.current_status_text }}
                         </div>
                     </div>
                     <div class="uptime-bar">
-                        {% for _, tick in service.ticks.items() %}
-                        {% if tick.status.value == 'no-data' %}
+                        {%- for _, tick in service.ticks.items() %}
+                        {%- if tick.status.value == 'no-data' %}
                         <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: No data"></div>
-                        {% else %}
+                        {%- else %}
                         <div class="uptime-tick {{ tick.status.value }}" title="{{ tick.date }}: {{ tick.uptime }}% uptime"></div>
-                        {% endif %}
-                        {% endfor %}
+                        {%- endif %}
+                        {%- endfor %}
                     </div>
                 </div>
-                {% endfor %}
+                {%- endfor %}
             </div>
         </div>
         <div class="footer">

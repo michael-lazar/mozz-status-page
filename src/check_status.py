@@ -10,6 +10,7 @@
 import argparse
 import asyncio
 import json
+import ssl
 import traceback
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -171,13 +172,13 @@ class ServiceData:
 # =============================================================================
 
 
-async def fetch_gopher(host: str, port: int = 70, selector: str = "") -> bytes:
-    """Check a gopher server by sending a request and reading response.
+async def fetch_tcp(host: str, port: int, request: bytes = b"") -> bytes:
+    """Fetch data from a TCP server by sending a request and reading response.
 
     Args:
-        host: The gopher server hostname
-        port: The gopher server port (default 70)
-        selector: The gopher selector to request (default empty string)
+        host: The server hostname
+        port: The server port
+        request: The request bytes to send (default empty)
 
     Returns:
         The response bytes from the server
@@ -187,13 +188,46 @@ async def fetch_gopher(host: str, port: int = 70, selector: str = "") -> bytes:
         timeout=CHECK_TIMEOUT,
     )
 
-    # Send gopher request (selector followed by CRLF)
-    request = f"{selector}\r\n".encode()
     writer.write(request)
     await writer.drain()
 
     # Read full response
     response = await asyncio.wait_for(reader.read(), timeout=CHECK_TIMEOUT)
+
+    writer.close()
+    await writer.wait_closed()
+
+    return response
+
+
+async def fetch_gemini(host: str, port: int, url: str) -> bytes:
+    """Fetch data from a Gemini server over TLS without certificate verification.
+
+    Args:
+        host: The server hostname
+        port: The server port
+        url: The full URL to request (e.g., "gemini://mozz.us/")
+
+    Returns:
+        The response header line from the server
+    """
+    # Create SSL context that doesn't verify certificates
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    reader, writer = await asyncio.wait_for(
+        asyncio.open_connection(host, port, ssl=context),
+        timeout=CHECK_TIMEOUT,
+    )
+
+    # Send Gemini request: url\r\n
+    request = f"{url}\r\n".encode()
+    writer.write(request)
+    await writer.drain()
+
+    # Read response header
+    response = await asyncio.wait_for(reader.readline(), timeout=CHECK_TIMEOUT)
 
     writer.close()
     await writer.wait_closed()
@@ -208,7 +242,6 @@ async def fetch_gopher(host: str, port: int = 70, selector: str = "") -> bytes:
     group="Web",
 )
 async def check_mozz_us() -> bool:
-    """Check https://mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://mozz.us")
         return response.status_code == 200
@@ -221,7 +254,6 @@ async def check_mozz_us() -> bool:
     group="Web",
 )
 async def check_portal_mozz_us() -> bool:
-    """Check https://portal.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://portal.mozz.us")
         return response.status_code == 200
@@ -234,7 +266,6 @@ async def check_portal_mozz_us() -> bool:
     group="Web",
 )
 async def check_ascii_mozz_us() -> bool:
-    """Check https://ascii.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://ascii.mozz.us")
         return response.status_code == 200
@@ -247,7 +278,6 @@ async def check_ascii_mozz_us() -> bool:
     group="Web",
 )
 async def check_git_mozz_us() -> bool:
-    """Check https://git.mozz.us."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://git.mozz.us")
         return response.status_code == 200
@@ -260,21 +290,67 @@ async def check_git_mozz_us() -> bool:
     group="Web",
 )
 async def check_ascii_mozz_us_7070() -> bool:
-    """Check https://ascii.mozz.us:7070."""
     async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         response = await client.get("https://ascii.mozz.us:7070")
         return response.status_code == 200
 
 
 @register(
+    name="spring83",
+    display_name="Spring '83",
+    url="https://spring83.mozz.us",
+    group="Web",
+)
+async def check_spring83() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://spring83.mozz.us")
+        return response.status_code == 200
+
+
+@register(
+    name="shiftjis-art",
+    display_name="ShiftJIS Art",
+    url="https://aa.mozz.us",
+    group="Web",
+)
+async def check_shiftjis_art() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://aa.mozz.us")
+        return response.status_code == 200
+
+
+@register(
+    name="goodvibes",
+    display_name="Good Vibes Flash",
+    url="https://goodvibes.mozz.us",
+    group="Web",
+)
+async def check_goodvibes() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://goodvibes.mozz.us")
+        return response.status_code == 302
+
+
+@register(
+    name="hsl",
+    display_name="The Human Software License",
+    url="https://license.mozz.us",
+    group="Web",
+)
+async def check_hsl() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://license.mozz.us")
+        return response.status_code == 200
+
+
+@register(
     name="gopher-homepage",
-    display_name="Homepage",
+    display_name="Gopher Homepage",
     url="gopher://mozz.us",
     group="Gopher",
 )
 async def check_gopher_mozz_us() -> bool:
-    """Check gopher://mozz.us."""
-    response = await fetch_gopher("mozz.us")
+    response = await fetch_tcp("mozz.us", 70, b"\r\n")
     return len(response) > 0
 
 
@@ -285,8 +361,7 @@ async def check_gopher_mozz_us() -> bool:
     group="Gopher",
 )
 async def check_gopher_hngopher() -> bool:
-    """Check gopher://hngopher.com."""
-    response = await fetch_gopher("hngopher.com")
+    response = await fetch_tcp("hngopher.com", 70, b"\r\n")
     return len(response) > 0
 
 
@@ -297,8 +372,7 @@ async def check_gopher_hngopher() -> bool:
     group="Gopher",
 )
 async def check_gopher_mozz_us_7003() -> bool:
-    """Check gopher://mozz.us:7003."""
-    response = await fetch_gopher("mozz.us", 7003)
+    response = await fetch_tcp("mozz.us", 7003, b"\r\n")
     return len(response) > 0
 
 
@@ -309,8 +383,7 @@ async def check_gopher_mozz_us_7003() -> bool:
     group="Gopher",
 )
 async def check_gopher_mozz_us_7005() -> bool:
-    """Check gopher://mozz.us:7005."""
-    response = await fetch_gopher("mozz.us", 7005)
+    response = await fetch_tcp("mozz.us", 7005, b"\r\n")
     return len(response) > 0
 
 
@@ -321,9 +394,90 @@ async def check_gopher_mozz_us_7005() -> bool:
     group="Gopher",
 )
 async def check_gopher_mozz_us_7006() -> bool:
-    """Check gopher://mozz.us:7006."""
-    response = await fetch_gopher("mozz.us", 7006)
+    response = await fetch_tcp("mozz.us", 7006, b"\r\n")
     return len(response) > 0
+
+
+@register(
+    name="nex-homepage",
+    display_name="Nex Homepage",
+    url="nex://mozz.us",
+    group="Nex",
+)
+async def check_nex_mozz_us() -> bool:
+    response = await fetch_tcp("mozz.us", 1900, b"\r\n")
+    return b"ride the wave" in response
+
+
+@register(
+    name="finger",
+    display_name="Finger Directory",
+    url="finger://mozz.us/michael",
+    group="Finger",
+)
+async def check_finger_mozz_us() -> bool:
+    response = await fetch_tcp("mozz.us", 79, b"michael\r\n")
+    return b"michael@mozz.us" in response
+
+
+@register(
+    name="spartan-homepage",
+    display_name="Spartan Homepage",
+    url="spartan://mozz.us",
+    group="Spartan",
+)
+async def check_spartan_mozz_us() -> bool:
+    response = await fetch_tcp("mozz.us", 300, b"mozz.us / 0\r\n")
+    return response.startswith(b"2 text/gemini\r\n")
+
+
+@register(
+    name="gemini-homepage",
+    display_name="Gemini Homepage",
+    url="gemini://mozz.us",
+    group="Gemini",
+)
+async def check_gemini_mozz_us() -> bool:
+    response = await fetch_gemini("mozz.us", 1965, "gemini://mozz.us/")
+    return response.startswith(b"20 text/gemini;")
+
+
+@register(
+    name="gemini-astrobotany",
+    display_name="Astrobotany",
+    url="gemini://astrobotany.mozz.us",
+    group="Gemini",
+)
+async def check_gemini_astrobotany() -> bool:
+    response = await fetch_gemini(
+        "astrobotany.mozz.us", 1965, "gemini://astrobotany.mozz.us/"
+    )
+    return response.startswith(b"20 text/gemini\r\n")
+
+
+@register(
+    name="gemini-chat",
+    display_name="Gemini Chat",
+    url="gemini://chat.mozz.us",
+    group="Gemini",
+)
+async def check_gemini_chat() -> bool:
+    response = await fetch_gemini("chat.mozz.us", 1965, "gemini://chat.mozz.us/")
+    return response.startswith(b"20 text/gemini\r\n")
+
+
+@register(
+    name="cso",
+    display_name="CCSO Nameserver",
+    url="cso://mozz.us",
+    group="CSO",
+)
+async def check_cso() -> bool:
+    response = await fetch_tcp("mozz.us", 105, b"status\r\n")
+    return len(response) > 0
+
+
+# TODO: telnet://
 
 
 # =============================================================================
@@ -335,6 +489,9 @@ async def run_single_check(name: str, func: Callable, timestamp: int) -> CheckRe
     """Run a single health check."""
     try:
         success = await func()
+    except TimeoutError:
+        print(f"Timeout checking {name}")
+        success = False
     except Exception:
         print(f"Error checking {name}:")
         traceback.print_exc()

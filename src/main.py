@@ -429,13 +429,15 @@ def save_check_results(results: list[CheckResult], timestamp: int) -> None:
 
     # Convert timestamp to datetime to get the date
     dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    year = dt.strftime("%Y")
     date_str = dt.strftime("%Y%m%d")
 
-    # Create history file path for this date
-    history_file = HISTORY_DIR / f"history-{date_str}.csv"
+    # Create history file path: data/2025/checks-20250114.csv
+    year_dir = HISTORY_DIR / year
+    history_file = year_dir / f"checks-{date_str}.csv"
 
     # Ensure directory exists
-    HISTORY_DIR.mkdir(parents=True, exist_ok=True)
+    year_dir.mkdir(parents=True, exist_ok=True)
 
     # Append each result as a CSV line: timestamp,name,success
     with history_file.open("a", newline="") as fp:
@@ -458,8 +460,12 @@ def load_check_results() -> list[CheckResult]:
     # Load data from the configured number of days
     for i in range(HISTORY_TICKS):
         day = now - timedelta(days=i)
+        year = day.strftime("%Y")
         date_str = day.strftime("%Y%m%d")
-        history_file = HISTORY_DIR / f"history-{date_str}.csv"
+
+        # Load from: data/2025/checks-20250114.csv
+        year_dir = HISTORY_DIR / year
+        history_file = year_dir / f"checks-{date_str}.csv"
 
         if not history_file.exists():
             continue

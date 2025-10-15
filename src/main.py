@@ -2,7 +2,7 @@
 #
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["httpx", "jinja2"]
+# dependencies = ["httpx", "jinja2", "markdown"]
 # ///
 
 """Automated health checker and status page generator."""
@@ -21,6 +21,7 @@ from typing import Any
 from functools import cached_property
 
 import httpx
+import markdown
 from jinja2 import Template
 
 ROOT_DIR = Path(__file__).parent.parent
@@ -32,6 +33,7 @@ ROOT_DIR = Path(__file__).parent.parent
 DATA_DIR = ROOT_DIR / "data"
 DIST_DIR = ROOT_DIR / "dist"
 TEMPLATE_DIR = ROOT_DIR / "templates"
+INCIDENTS_FILE = ROOT_DIR / "INCIDENTS.md"
 
 CHECK_TIMEOUT = 10.0  # seconds
 HISTORY_TICKS = 45  # days
@@ -175,6 +177,14 @@ class ServiceGroup:
 
     name: str | None
     services: list[ServiceData]
+
+
+@dataclass
+class Incident:
+    """An incident with date and content."""
+
+    date: str
+    content_html: str
 
 
 # =============================================================================
@@ -518,6 +528,53 @@ def calculate_all_service_stats(results: list[CheckResult]) -> list[ServiceData]
     return list(service_map.values())
 
 
+def parse_incidents() -> list[Incident]:
+    """Parse the INCIDENTS.md file and extract ongoing incidents."""
+    if not INCIDENTS_FILE.exists():
+        return []
+
+    content = INCIDENTS_FILE.read_text()
+    lines = content.splitlines()
+
+    incidents: list[Incident] = []
+    in_ongoing_section = False
+    current_incident_date = None
+    current_incident_content: list[str] = []
+
+    def flush() -> None:
+        if current_incident_date and current_incident_content:
+            content_md = "\n".join(current_incident_content).strip()
+            content_html = markdown.markdown(content_md)
+            incident = Incident(date=current_incident_date, content_html=content_html)
+            incidents.append(incident)
+
+    for line in lines:
+        if line.startswith("## "):
+            if in_ongoing_section:
+                # Stop when we hit the second ## header (Resolved)
+                break
+            else:
+                in_ongoing_section = True
+                continue
+
+        if in_ongoing_section:
+            # Check for H3 (incident date)
+            if line.startswith("### "):
+                # Save previous incident if exists
+                flush()
+                # Start new incident
+                current_incident_date = line[4:].strip()  # Remove "### "
+                current_incident_content = []
+            else:
+                # Accumulate content for current incident
+                current_incident_content.append(line)
+
+    # Save the last incident
+    flush()
+
+    return incidents
+
+
 def generate_html() -> None:
     """Generate the status page HTML from historical data."""
     data = load_check_results()
@@ -546,6 +603,9 @@ def generate_html() -> None:
 
     last_updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
+    # Parse incidents
+    incidents = parse_incidents()
+
     # Generate HTML with all data rendered server-side
     template_file = TEMPLATE_DIR / "index.html"
     template_content = template_file.read_text()
@@ -555,6 +615,7 @@ def generate_html() -> None:
         status_message=status_message,
         last_updated=last_updated,
         groups=groups,
+        incidents=incidents,
     )
 
     # Ensure output directory exists

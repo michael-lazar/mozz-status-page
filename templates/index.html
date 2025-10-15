@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mozz Status Page</title>
     {%- if overall_status.value == 'operational' %}
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2310b981'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%2310b981'/></svg>">
     {%- else %}
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23ef4444'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23ef4444'/></svg>">
     {%- endif %}
     <style>
         * {
@@ -187,6 +187,32 @@
         .uptime-tick:hover::after {
             opacity: 1;
         }
+        .incidents {
+            padding: 20px 40px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .incident {
+            margin-bottom: 20px;
+        }
+        .incident:last-child {
+            margin-bottom: 0;
+        }
+        .incident-date {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .incident-content {
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        .incident-content p {
+            margin: 0;
+        }
+        .incident-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
         .footer {
             text-align: center;
             margin-top: 10px;
@@ -209,6 +235,16 @@
                 <p>{{ status_message }}</p>
                 <div class="last-updated">Last updated: {{ last_updated }} UTC</div>
             </div>
+            {%- if incidents %}
+            <div class="incidents">
+                {%- for incident in incidents %}
+                <div class="incident">
+                    <div class="incident-date">{{ incident.date }}</div>
+                    <div class="incident-content">{{ incident.content_html | safe }}</div>
+                </div>
+                {%- endfor %}
+            </div>
+            {%- endif %}
             <div class="services">
                 {%- for group in groups %}
                 <div class="group">

@@ -177,6 +177,7 @@ class ServiceGroup:
 
     name: str | None
     services: list[ServiceData]
+    slug: str | None = None
 
 
 @dataclass
@@ -591,7 +592,14 @@ def generate_html() -> None:
         groups_dict[group_name].append(service)
 
     # Convert to list of ServiceGroup objects
-    groups = [ServiceGroup(name, services) for name, services in groups_dict.items()]
+    groups = [
+        ServiceGroup(
+            name=name,
+            services=services,
+            slug=name.lower().replace(" ", "-") if name else None,
+        )
+        for name, services in groups_dict.items()
+    ]
 
     # Determine overall status
     if any(s.status == ServiceStatus.DOWN for s in services):

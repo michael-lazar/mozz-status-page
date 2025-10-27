@@ -170,6 +170,20 @@ class ServiceData:
             case _:
                 raise ValueError()
 
+    @cached_property
+    def cumulative_uptime(self) -> float:
+        """Calculate cumulative uptime percentage across all ticks."""
+        all_results = []
+        for tick in self.ticks.values():
+            all_results.extend(tick.results)
+
+        if not all_results:
+            return 100.0
+
+        successes = sum(int(r) for r in all_results)
+        uptime_pct = (successes / len(all_results)) * 100
+        return uptime_pct
+
 
 @dataclass
 class ServiceGroup:
@@ -624,6 +638,7 @@ def generate_html() -> None:
         last_updated=last_updated,
         groups=groups,
         incidents=incidents,
+        history_ticks=HISTORY_TICKS,
     )
 
     # Ensure output directory exists

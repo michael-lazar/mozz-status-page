@@ -196,6 +196,13 @@
         .uptime-tick:hover::after {
             opacity: 1;
         }
+        .uptime-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.8em;
+            color: #6b7280;
+        }
         .incidents {
             padding: 20px 40px;
             border-bottom: 1px solid #e5e7eb;
@@ -302,6 +309,11 @@
                                 <div class="uptime-tick {{ tick.status.value }}" data-tooltip="{{ tick.date }}: {{ "%.2f"|format(tick.uptime) }}% uptime"></div>
                                 {%- endif %}
                                 {%- endfor %}
+                            </div>
+                            <div class="uptime-info">
+                                <span>{{ history_ticks }} days ago</span>
+                                <span>{{ "%.1f"|format(service.cumulative_uptime) }}% uptime</span>
+                                <span>Today</span>
                             </div>
                         </div>
                         {%- endfor %}

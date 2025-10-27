@@ -623,7 +623,7 @@ def generate_html() -> None:
         overall_status = ServiceStatus.OPERATIONAL
         status_message = "All systems operational"
 
-    last_updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    last_updated = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
 
     # Parse incidents
     incidents = parse_incidents()

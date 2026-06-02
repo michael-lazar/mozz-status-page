@@ -352,6 +352,13 @@ async def check_hsl() -> bool:
         return response.status_code == 200
 
 
+@register("slashdot", title="Slashdot Mirror", url="https://slashdot.mozz.us", group="WWW")
+async def check_slashdot() -> bool:
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
+        response = await client.get("https://slashdot.mozz.us")
+        return response.status_code == 200
+
+
 @register("gopher-homepage", title="Gopher Homepage", url="gopher://mozz.us", group="Gopher")
 async def check_gopher_mozz_us() -> bool:
     response = await fetch_tcp("mozz.us", 70, b"\r\n")

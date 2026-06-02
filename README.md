@@ -10,7 +10,7 @@ A Github Action is triggered every 15 minutes to run an [automated healthcheck](
 
 There's also an [INCIDENTS.md](INCIDENTS.md) file which can be edited by hand, and will be parsed and displayed at the top of the status page.
 
-This project was "vibe engineered" using claude code. 
+This project was built using claude code. 
 
 ## Development
 

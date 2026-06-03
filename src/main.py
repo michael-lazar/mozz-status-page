@@ -243,13 +243,8 @@ async def fetch_tcp(
 
 
 async def fetch_www(url: str) -> httpx.Response:
-    """Fetch an HTTP(S) URL with the status-check identifier header.
-
-    The X-Status-Check header lets a Cloudflare WAF rule skip bot-protection
-    challenges for monitoring requests originating from GitHub Actions.
-    """
-    headers = {"X-Status-Check": "mozz-status-page"}
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT, headers=headers) as client:
+    """Fetch an HTTP(S) URL."""
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
         return await client.get(url)
 
 

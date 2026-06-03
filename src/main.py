@@ -242,6 +242,17 @@ async def fetch_tcp(
     return response
 
 
+async def fetch_www(url: str) -> httpx.Response:
+    """Fetch an HTTP(S) URL with the status-check identifier header.
+
+    The X-Status-Check header lets a Cloudflare WAF rule skip bot-protection
+    challenges for monitoring requests originating from GitHub Actions.
+    """
+    headers = {"X-Status-Check": "mozz-status-page"}
+    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT, headers=headers) as client:
+        return await client.get(url)
+
+
 async def fetch_gemini(host: str, port: int, url: str) -> bytes:
     """Fetch data from a Gemini server over TLS without certificate verification.
 
@@ -298,65 +309,56 @@ async def check_gopher_hngopher() -> bool:
 
 @register("www-homepage", title="Homepage", url="https://mozz.us", group="WWW")
 async def check_mozz_us() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://mozz.us")
+    return response.status_code == 200
 
 
 @register("ascii-gallery", title="ASCII Art Gallery", url="https://ascii.mozz.us", group="WWW")
 async def check_ascii_mozz_us() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://ascii.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://ascii.mozz.us")
+    return response.status_code == 200
 
 
 @register("git", title="Git Mirror", url="https://git.mozz.us", group="WWW")
 async def check_git_mozz_us() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://git.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://git.mozz.us")
+    return response.status_code == 200
 
 
 @register("emporium", title="ASCII Art Emporium", url="https://ascii.mozz.us:7070", group="WWW")
 async def check_ascii_mozz_us_7070() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://ascii.mozz.us:7070")
-        return response.status_code == 200
+    response = await fetch_www("https://ascii.mozz.us:7070")
+    return response.status_code == 200
 
 
 @register("spring83", title="Spring '83", url="https://spring83.mozz.us", group="WWW")
 async def check_spring83() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://spring83.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://spring83.mozz.us")
+    return response.status_code == 200
 
 
 @register("shiftjis-art", title="ShiftJIS Art", url="https://aa.mozz.us", group="WWW")
 async def check_shiftjis_art() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://aa.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://aa.mozz.us")
+    return response.status_code == 200
 
 
 @register("goodvibes", title="Good Vibes", url="https://goodvibes.mozz.us", group="WWW")
 async def check_goodvibes() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://goodvibes.mozz.us")
-        return response.status_code == 302
+    response = await fetch_www("https://goodvibes.mozz.us")
+    return response.status_code == 302
 
 
 @register("license", title="Human Software License", url="https://license.mozz.us", group="WWW")
 async def check_hsl() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://license.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://license.mozz.us")
+    return response.status_code == 200
 
 
 @register("slashdot", title="Slashdot Mirror", url="https://slashdot.mozz.us", group="WWW")
 async def check_slashdot() -> bool:
-    async with httpx.AsyncClient(timeout=CHECK_TIMEOUT) as client:
-        response = await client.get("https://slashdot.mozz.us")
-        return response.status_code == 200
+    response = await fetch_www("https://slashdot.mozz.us")
+    return response.status_code == 200
 
 
 @register("gopher-homepage", title="Gopher Homepage", url="gopher://mozz.us", group="Gopher")
